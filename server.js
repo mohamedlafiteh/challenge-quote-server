@@ -3,12 +3,12 @@
 
 //load the 'express' module which makes writing webservers easy
 const express = require("express");
+const cors = require("cors");
 const app = express();
-
 //load the quotes JSON
 const Quotes = require("./quotes.json");
-
-// Now register handlers for some routes:
+app.use(cors());
+//Now register handlers for some routes:
 //   /                  - Return some helpful welcome info (text)
 //   /quotes            - Should return all quotes (json)
 //   /quotes/random     - Should return ONE quote (json)
@@ -17,6 +17,33 @@ app.get("/", function(request, response) {
 });
 
 //START OF YOUR CODE...
+app.get("/quotes", (req, res) => {
+  res.json(Quotes);
+});
+
+app.get("/quotes/random", (req, res) => {
+  const randomNumber = Math.floor(Math.random() * Quotes.length);
+
+  const randomQuote = Quotes[randomNumber];
+  console.log("hi server", randomQuote);
+
+  res.json(randomQuote);
+});
+
+app.get("/quotes/search", (req, res) => {
+  if (req.query.term) {
+    const term = req.query.term.toUpperCase();
+    const quotesList = Quotes.filter(quote => {
+      return (
+        quote.quote.toUpperCase().includes(term) ||
+        quote.author.toUpperCase().includes(term)
+      );
+    });
+    res.json(quotesList);
+  } else {
+    res.send("there is an error");
+  }
+});
 
 //...END OF YOUR CODE
 
@@ -29,6 +56,6 @@ function pickFromArray(arr) {
 }
 
 //Start our server so that it listens for HTTP requests!
-const listener = app.listen(process.env.PORT, function() {
+const listener = app.listen(process.env.PORT || 3002, function() {
   console.log("Your app is listening on port " + listener.address().port);
 });
